@@ -1,0 +1,18 @@
+{
+  "name": "defender-dashboard",
+  "version": "1.0.0",
+  "description": "Microsoft Defender XDR Dashboard — Managed Identity + Graph Security API",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "build": "echo build ok",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "@azure/identity": "^4.2.0",
+    "express": "^4.18.2"
+  }
+}

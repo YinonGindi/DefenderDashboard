@@ -137,6 +137,20 @@
             color: #6b7b8d;
             font-size: 12px;
         }
+        .header-workspace {
+            font-size: 13px;
+            color: #6b7b8d;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 8px 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 220px;
+        }
+        .header-workspace .ws-label { color: #8b949e; }
+        .header-workspace .ws-name  { color: #c9d1d9; font-weight: 500; }
         .header-gear {
             position: relative;
             width: 32px; height: 32px; border-radius: 8px;
@@ -230,10 +244,15 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            transition: transform 0.2s ease;
         }
+        .left-label:hover { transform: scale(1.08); }
         .left-label .ll-icon { font-size: 16px; }
         .left-label .ll-name { font-size: 15px; font-weight: 600; color: #c9d1d9; }
         .left-label .ll-val { font-size: 15px; font-weight: 400; color: #8b949e; }
+        .left-label .ll-subs { font-size: 11px; color: #6b7b8d; display: flex; flex-direction: column; gap: 1px; margin-top: 2px; text-align: right; }
+        .left-label .ll-sub { color: #6b7b8d; text-decoration: none; cursor: pointer; display: block; }
+        .left-label .ll-sub:hover { color: #58a6ff; text-decoration: underline; }
         .left-label[data-url] { cursor: pointer; }
         .left-label[data-url]:hover .ll-name { color: #58a6ff; text-decoration: underline; }
 
@@ -250,7 +269,9 @@
             position: absolute;
             z-index: 10;
             text-align: left;
+            transition: transform 0.2s ease;
         }
+        .right-label:hover { transform: scale(1.08); }
         .right-label .rl-name { font-size: 15px; font-weight: 700; color: #c9d1d9; }
         .right-label .rl-inc { font-size: 14px; font-weight: 700; }
         .right-label .rl-alerts { font-size: 12px; color: #6b7b8d; }
@@ -272,6 +293,10 @@
             transform: translate(-50%, -50%);
             width: 220px;
             height: 220px;
+            transition: transform 0.3s ease;
+        }
+        .center-shield:hover {
+            transform: translate(-50%, -50%) scale(1.1);
         }
         .shield-glow {
             position: absolute;
@@ -305,7 +330,7 @@
     <div class="loading-bar-track"><div class="loading-bar-fill"></div></div>
 </div>
 <header>
-    <svg class="header-shield" viewBox="0 0 80 84" preserveAspectRatio="xMidYMid meet">
+    <a href="https://security.microsoft.com" target="_blank"><svg class="header-shield" viewBox="0 0 80 84" preserveAspectRatio="xMidYMid meet">
         <defs>
             <linearGradient id="hsg1" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stop-color="#58c8ff"/>
@@ -315,7 +340,7 @@
         <g transform="matrix(0.01398039,0,0,-0.01417719,-33.17809,96.411465)" style="fill:url(#hsg1);stroke:none">
             <path d="M 53.902344 2.3261719 C 53.51133 2.3173111 53.384458 2.3836187 53.332031 2.5253906 L 53.332031 47.414062 L 97.615234 47.253906 C 98.052122 46.722262 98.17352 42.69957 98.121094 28.894531 L 98.068359 14.804688 L 96.933594 14.769531 C 83.687174 14.326494 76.468514 12.449492 68.447266 7.3457031 C 65.773516 5.6444403 65.232543 5.3601103 63.257812 4.5449219 C 60.985999 3.6234045 58.522637 2.9502762 56.058594 2.578125 C 54.9489 2.4186316 54.293358 2.3350326 53.902344 2.3261719 z M 46.603516 2.3652344 C 46.271481 2.3652344 45.171781 2.4888007 44.158203 2.6660156 C 39.597101 3.4457611 36.381203 4.7215433 32.449219 7.2734375 C 28.325004 9.9493821 25.598106 11.243728 21.351562 12.501953 C 17.244823 13.724736 10.342983 14.627759 4.2265625 14.769531 L 2.4785156 14.804688 L 2.4433594 28.982422 C 2.4084084 39.154556 2.4599081 43.763061 2.6171875 45.287109 L 2.828125 47.414062 L 47.214844 47.414062 L 47.214844 2.4003906 L 46.603516 2.3652344 z M 96.408203 53.349609 C 96.408203 53.774925 53.367188 53.474609 53.367188 53.474609 L 53.488281 103.32422 C 53.715463 103.32422 54.396979 102.95325 56.476562 101.73047 C 56.861023 101.50009 58.88927 100.16953 60.986328 98.769531 C 68.151278 93.967008 73.288398 89.733035 78.496094 84.345703 C 84.525137 78.090018 88.545713 72.612641 92.005859 65.931641 C 94.242722 61.589876 96.408203 55.636147 96.408203 53.775391 L 96.408203 53.349609 z M 47.214844 53.439453 L 4.2265625 53.527344 C 4.0867586 53.775445 4.4015166 55.406016 4.9257812 57.125 C 6.7432319 62.990812 10.271859 69.795831 14.326172 75.236328 C 18.957176 81.421127 25.265867 87.782195 32.623047 93.701172 C 37.271527 97.422684 45.921866 103.14648 46.917969 103.14648 L 47.214844 53.439453 z" transform="matrix(57.22301,0,0,-56.428672,2373.1877,6800.4636)"/>
         </g>
-    </svg>
+    </svg></a>
     <div class="header-title">
         <h1>Microsoft Defender</h1>
     </div>
@@ -336,6 +361,9 @@
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
         </select>
+    </div>
+    <div class="header-workspace" id="workspace-name" style="display:none;">
+        <span class="ws-label">Workspace: </span><span class="ws-name" id="ws-name-text"></span>
     </div>
     <div class="header-gear" id="gear-btn">⚙
         <div class="gear-menu" id="gear-menu">
@@ -360,7 +388,7 @@
     <svg id="sankey"></svg>
 
     <!-- Center shield -->
-    <div class="center-shield">
+    <a href="https://security.microsoft.com" target="_blank" class="center-shield">
         <div class="shield-glow"></div>
         <svg class="shield-svg" viewBox="0 0 80 84" preserveAspectRatio="xMidYMid meet">
             <defs>
@@ -378,16 +406,27 @@
                 <path style="fill:url(#sg2)" d="M 46.603516 2.3652344 C 46.271481 2.3652344 45.171781 2.4888007 44.158203 2.6660156 C 39.597101 3.4457611 36.381203 4.7215433 32.449219 7.2734375 C 28.325004 9.9493821 25.598106 11.243728 21.351562 12.501953 C 17.244823 13.724736 10.342983 14.627759 4.2265625 14.769531 L 2.4785156 14.804688 L 2.4433594 28.982422 C 2.4084084 39.154556 2.4599081 43.763061 2.6171875 45.287109 L 2.828125 47.414062 L 47.214844 47.414062 L 47.214844 2.4003906 L 46.603516 2.3652344 z M 47.214844 53.439453 L 4.2265625 53.527344 C 4.0867586 53.775445 4.4015166 55.406016 4.9257812 57.125 C 6.7432319 62.990812 10.271859 69.795831 14.326172 75.236328 C 18.957176 81.421127 25.265867 87.782195 32.623047 93.701172 C 37.271527 97.422684 45.921866 103.14648 46.917969 103.14648 L 47.214844 53.439453 z" transform="matrix(57.22301,0,0,-56.428672,2373.1877,6800.4636)"/>
             </g>
         </svg>
-    </div>
+    </a>
 </div>
 
 <script>
 // ── Data (defaults — overwritten by API) ──
 let sources = [
-    { name: 'Identities',      value: 0,   icon: '🔑', color: '#3b5998', url: 'https://security.microsoft.com/identity-inventory' },
+    { name: 'Identities', value: 0, icon: '🔑', color: '#3b5998', url: 'https://security.microsoft.com/identity-inventory',
+      subs: [
+        { name: 'Cloud',   value: 0, url: 'https://security.microsoft.com/hunting?query=H4sIAD9A4WkAA22QsQ6CQBBEp_YrrhOMjYmtJkYbKkywNwiIGhEDikL8eB-rnWbDMdmZ2dm7QKkyXXTTka9VAN6r1EAvOdW6q6BiVfAdSmc419a6T3nawBQwNf4YdNUY1Ug-546JTgslVMmsPieke0KfgAPSe3UIs2Zuhj9i3qe71Nlc6bf32emhA7rKdvnNdprbjjlOTxNN8fl_nJFNrtgis-RSjWX0vNOMchqyeWeqzO7Qv1EDXvGvvjcoQS3KN_iASdhIAQAA&runQuery=true&tid=&goHunt=1' },
+        { name: 'Hybrid',  value: 0, url: 'https://security.microsoft.com/hunting?query=H4sIAD9A4WkAA22PywqCYBCFv3VP8e_SaBO0LYg2uTKwfXjLCs3Q7vTwHcd2xaCMc64GZOScuHDQ8yTQvqNmwBtHy5VKE9MIf4npbC_Y2vWBx0ZIJaSVPtZ2ZizWCF_vRI6OBammlleXE-p6FD_VHii9Y4dC1vLNpY_k11-XlKbKvre-0529eI11-c12zK1jIaXHhKl0_h9lZM6NWuSWXHOzjA53zDSOISv1T-zfM319ACggc5IsAQAA&runQuery=true&tid=&goHunt=1' },
+        { name: 'On-Prem', value: 0, url: 'https://security.microsoft.com/hunting?query=H4sIAD9A4WkAA22QwQqCYBCE59xT_LcsugRdC6IungzsHqZmRWZoWUYP3-fqrVjUYWdmZ9BXolRX3XXiaeSDDyo00EdOlR7KmUgl_BulM5xpZ9uXPG1hcpgKfwS6aYJqrBHvPRedloqZglttTsD2jD4G-6S36gBmw90Uf8i9brvSxVxJv-s6PXVEV1qX32ynhXXMcHqaaoZv9McZ2uWSFqklF6oto-Wd5ozT0Jq3f6Zmv-Zb9r0LUAP_BZ5xDgE-AQAA&runQuery=true&tid=&goHunt=1' },
+      ]
+    },
     { name: 'Devices',          value: 0,   icon: '💻', color: '#1a6fb5', url: 'https://security.microsoft.com/machines?category=all-devices' },
     { name: 'Email',            value: 0,   icon: '📧', color: '#1a8a6a', url: 'https://security.microsoft.com/threatexplorerv3' },
-    { name: 'Cloud Apps',       value: 0,   icon: '☁',  color: '#6e4fa0', url: 'https://security.microsoft.com/cloudapps/settings?tabid=appConnectors' },
+    { name: 'Cloud Apps',       value: 0,   icon: '☁',  color: '#6e4fa0', url: 'https://security.microsoft.com/cloudapps/settings?tabid=appConnectors',
+      subs: [
+        { name: 'Cloud Apps', value: 0, url: 'https://security.microsoft.com/cloudapps/settings?tabid=appConnectors' },
+        { name: 'OAuth Apps', value: 0, url: 'https://security.microsoft.com/applications?oAuthApp=AzureAD&tab=oauthapps&tid=fc03cfc9-ec2d-48e1-86b1-e3977605428d' },
+      ]
+    },
     { name: 'Sentinel',  value: 0,   icon: '<img src="https://ms-security.gallerycdn.vsassets.io/extensions/ms-security/ms-sentinel/2.0.2/1775192808731/Microsoft.VisualStudio.Services.Icons.Default" style="width:18px;height:18px;vertical-align:middle;border-radius:3px;">', color: '#2e9ced', unit: 'GB', url: 'https://security.microsoft.com/v2/advanced-hunting?query=H4sIAIHX4GkAA02OQQ4BQRRE31riDr0cSwdgJbEWHKDFBItBultkxOE9PYhFpfpX_arfWzKRAy1jRjwJ3Dk6JRHZcKLztRTnqkaKvNebi3fyQsNUZfJryNxMdbrJ_KM2ras2-3gNKznaWdwo9KYDOzmwqDeit3uuf__KXko6372h8QULonSjwAAAAA&timeRangeId=SetInQuery' },
     { name: 'AI Agent',  value: 0,   icon: '🤖', color: '#9b59b6', url: 'https://security.microsoft.com/ai-agents-inventory' },
 ];
@@ -417,8 +456,8 @@ async function fetchDashboard(timeframe, silent = false) {
     } catch (err) {
         console.warn('API unreachable, showing zeros:', err.message);
         data = {
-            sources: { identities: 0, devices: 0, email: 0, cloudApps: 0, sentinelGB: 0, aiAgents: 0 },
-            header:  { totalAlerts: 0, totalIncidents: 0, openIncidents: 0 },
+            sources: { cloudIdentities: 0, hybridIdentities: 0, onpremIdentities: 0, devices: 0, email: 0, cloudApps: 0, oauthApps: 0, sentinelGB: 0, aiAgents: 0 },
+            header:  { totalAlerts: 0, totalIncidents: 0, openIncidents: 0, workspaceName: '' },
             stats:   { noiseReduction: 0, correlation: 0 },
             incidents: {
                 high: { incidents: 0, alerts: 0 }, medium: { incidents: 0, alerts: 0 },
@@ -428,10 +467,15 @@ async function fetchDashboard(timeframe, silent = false) {
     }
 
     // Update left-side sources
-    sources[0].value = data.sources.identities;
+    sources[0].subs[0].value = data.sources.cloudIdentities;
+    sources[0].subs[1].value = data.sources.hybridIdentities;
+    sources[0].subs[2].value = data.sources.onpremIdentities;
+    sources[0].value = data.sources.cloudIdentities + data.sources.hybridIdentities + data.sources.onpremIdentities;
     sources[1].value = data.sources.devices;
     sources[2].value = data.sources.email;
-    sources[3].value = data.sources.cloudApps;
+    sources[3].subs[0].value = data.sources.cloudApps;
+    sources[3].subs[1].value = data.sources.oauthApps;
+    sources[3].value = data.sources.cloudApps + data.sources.oauthApps;
     sources[4].value = data.sources.sentinelGB;
     sources[5].value = data.sources.aiAgents;
 
@@ -449,6 +493,15 @@ async function fetchDashboard(timeframe, silent = false) {
     document.querySelector('.stat-val.blue').textContent  = data.header.totalAlerts;
     document.querySelector('.stat-val.green').textContent  = data.header.totalIncidents;
     document.querySelector('.stat-val.orange').textContent = data.header.openIncidents;
+
+    // Update workspace name
+    const wsEl = document.getElementById('workspace-name');
+    if (data.header.workspaceName) {
+        document.getElementById('ws-name-text').textContent = data.header.workspaceName;
+        wsEl.style.display = '';
+    } else {
+        wsEl.style.display = 'none';
+    }
 
     // Update annotations
     document.getElementById('anno-noise').textContent = data.stats.noiseReduction + '% noise reduction';
@@ -508,6 +561,17 @@ const NS = 'http://www.w3.org/2000/svg';
 const canvas = document.getElementById('canvas');
 const svg    = document.getElementById('sankey');
 
+function fmtNum(v, unit) {
+    if (unit === 'GB') {
+        if (v >= 1024 * 1024) return (v / (1024 * 1024)).toFixed(1).replace(/\.0$/, '') + ' PB';
+        if (v >= 1024) return (v / 1024).toFixed(1).replace(/\.0$/, '') + ' TB';
+        return v + ' GB';
+    }
+    if (v >= 1000000) return (v / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (v >= 1000) return (v / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+    return '' + v;
+}
+
 function layout() {
     const W = canvas.clientWidth;
     const H = canvas.clientHeight;
@@ -532,17 +596,17 @@ function layout() {
     const MIN_BAND_H = 40;
 
     // ── Source bands (left) — reserve min height, distribute remainder proportionally ──
-    const activeSrc = sources.filter(s => s.value > 0);
-    const minReservedSrc = activeSrc.length * MIN_BAND_H;
-    const gapTotalSrc = GAP_SRC * Math.max(activeSrc.length - 1, 0);
+    const activeSrc = sources.filter(s => s.value > 0 || s.subs);
+    const minReservedSrc = sources.length * MIN_BAND_H;
+    const gapTotalSrc = GAP_SRC * Math.max(sources.length - 1, 0);
     const remainSrc = Math.max(usableH - gapTotalSrc - minReservedSrc, 0);
-    const totalSrcVal = activeSrc.reduce((s, d) => s + d.value, 0) || 1;
+    const totalSrcVal = sources.reduce((s, d) => s + d.value, 0) || 1;
     const srcExtraScale = remainSrc / totalSrcVal;
 
     let srcBands = [];
     let sy = PAD_TOP;
     for (const s of sources) {
-        const h = s.value > 0 ? MIN_BAND_H + s.value * srcExtraScale : 0;
+        const h = MIN_BAND_H + (s.value > 0 ? s.value * srcExtraScale : 0);
         srcBands.push({ ...s, y: sy, h });
         if (h > 0) sy += h + GAP_SRC;
     }
@@ -571,8 +635,11 @@ function layout() {
     svg.appendChild(defs);
 
     let cLeftY = centerTop;
+    const minCSlotH = 5;
+    const totalMinC = srcBands.length * minCSlotH;
+    const remainCLeft = Math.max(cTotalH - totalMinC, 0);
     const cLeftSlots = srcBands.map(b => {
-        const ch = (b.value / totalSrcVal) * cTotalH;
+        const ch = minCSlotH + (totalSrcVal > 0 ? (b.value / totalSrcVal) * remainCLeft : 0);
         const slot = { y: cLeftY, h: ch };
         cLeftY += ch;
         return slot;
@@ -588,7 +655,6 @@ function layout() {
 
     // ── Draw left flows ──
     srcBands.forEach((band, i) => {
-        if (band.h <= 0) return;
         const cSlot = cLeftSlots[i];
 
         const grad = document.createElementNS(NS, 'linearGradient');
@@ -616,7 +682,10 @@ function layout() {
         svg.appendChild(path);
 
         const motionD = `M ${x0},${band.y + band.h / 2} C ${cpx},${band.y + band.h / 2} ${cpx},${cSlot.y + cSlot.h / 2} ${x1},${cSlot.y + cSlot.h / 2}`;
-        addParticles(svg, defs, `lm${i}`, motionD, 7, band.color);
+        // Particle count proportional to value: min 3, max 15
+        const maxSrcVal = Math.max(...srcBands.filter(b => b.h > 0).map(b => b.value), 1);
+        const pCount = Math.max(3, Math.min(15, Math.round((band.value / maxSrcVal) * 15)));
+        addParticles(svg, defs, `lm${i}`, x0, band.y, band.h, x1, cSlot.y, cSlot.h, cpx, pCount);
 
         const bar = document.createElement('div');
         bar.className = 'left-bar';
@@ -625,9 +694,17 @@ function layout() {
 
         const lbl = document.createElement('div');
         lbl.className = 'left-label';
-        lbl.style.cssText = `right:${W - LEFT_X + 12}px;top:${band.y + band.h / 2 - 18}px;`;
-        lbl.innerHTML = `<span class="ll-icon">${band.icon}</span><span><span class="ll-name">${band.name}</span><br><span class="ll-val">${band.value}${band.unit ? ' ' + band.unit : ''}</span></span>`;
-        if (band.url) {
+        if (band.subs) {
+            lbl.style.cssText = `right:${W - LEFT_X + 12}px;top:${band.y + band.h / 2 - 32}px;`;
+            const subsHtml = band.subs.map(s =>
+                `<a href="${s.url}" target="_blank" class="ll-sub">${s.name}: ${fmtNum(s.value)}</a>`
+            ).join('');
+            lbl.innerHTML = `<span class="ll-icon">${band.icon}</span><span><a href="${band.url}" target="_blank" class="ll-name" style="text-decoration:none;color:inherit;">${band.name}</a> <span class="ll-val">${fmtNum(band.value)}</span><div class="ll-subs">${subsHtml}</div></span>`;
+        } else {
+            lbl.style.cssText = `right:${W - LEFT_X + 12}px;top:${band.y + band.h / 2 - 18}px;`;
+            lbl.innerHTML = `<span class="ll-icon">${band.icon}</span><span><span class="ll-name">${band.name}</span><br><span class="ll-val">${fmtNum(band.value, band.unit)}</span></span>`;
+        }
+        if (band.url && !band.subs) {
             lbl.setAttribute('data-url', band.url);
             lbl.addEventListener('click', () => window.open(band.url, '_blank'));
         }
@@ -664,7 +741,7 @@ function layout() {
         svg.appendChild(path);
 
         const motionD = `M ${x0},${cSlot.y + cSlot.h / 2} C ${cpx},${cSlot.y + cSlot.h / 2} ${cpx},${band.y + band.h / 2} ${x1},${band.y + band.h / 2}`;
-        addParticles(svg, defs, `rm${i}`, motionD, 3, band.color);
+        addParticles(svg, defs, `rm${i}`, x0, cSlot.y, cSlot.h, x1, band.y, band.h, cpx, 3);
 
         const bar = document.createElement('div');
         bar.className = 'right-bar';
@@ -674,40 +751,51 @@ function layout() {
         const lbl = document.createElement('div');
         lbl.className = 'right-label';
         lbl.style.cssText = `left:${RIGHT_X + 18}px;top:${band.y + band.h / 2 - 22}px;`;
-        lbl.innerHTML = `<span class="rl-name">${band.name}</span><br><span class="rl-inc" style="color:${band.color}">${band.incidents} incident${band.incidents !== 1 ? 's' : ''}</span><br><span class="rl-alerts">${band.alerts} alerts</span>`;
+        lbl.innerHTML = `<span class="rl-name">${band.name}</span><br><span class="rl-inc" style="color:${band.color}">${fmtNum(band.incidents)} incident${band.incidents !== 1 ? 's' : ''}</span><br><span class="rl-alerts">${fmtNum(band.alerts)} alerts</span>`;
         canvas.appendChild(lbl);
     });
 }
 
-function addParticles(svg, defs, id, d, count, color) {
-    const mp = document.createElementNS(NS, 'path');
-    mp.setAttribute('d', d);
-    mp.id = id;
-    mp.setAttribute('fill', 'none');
-    defs.appendChild(mp);
-
+function addParticles(svg, defs, id, x0, y0, h0, x1, y1, h1, cpx, count) {
     for (let p = 0; p < count; p++) {
+        // Random position within band: 0=top edge, 1=bottom edge
+        const t = 0.15 + Math.random() * 0.7; // keep 15% margin from edges
+
+        // Interpolate Y offset at start (wider) and end (narrower)
+        const startY = y0 + h0 * t;
+        const endY   = y1 + h1 * t;
+
+        const motionD = `M ${x0},${startY} C ${cpx},${startY} ${cpx},${endY} ${x1},${endY}`;
+
+        const mp = document.createElementNS(NS, 'path');
+        const pid = `${id}_${p}`;
+        mp.setAttribute('d', motionD);
+        mp.id = pid;
+        mp.setAttribute('fill', 'none');
+        defs.appendChild(mp);
+
         const c = document.createElementNS(NS, 'circle');
-        c.setAttribute('r', '2.5');
+        const r = (1.5 + Math.random() * 1.5).toFixed(1);
+        c.setAttribute('r', r);
         c.setAttribute('fill', '#c8d6e5');
         c.setAttribute('opacity', '0');
 
-        const dur = (3 + Math.random() * 2).toFixed(2);
-        const begin = (p * (3 / count) + Math.random() * 0.5).toFixed(2);
+        const dur = (2 + Math.random() * 4).toFixed(2);
+        const begin = (Math.random() * 6).toFixed(2);
 
         const am = document.createElementNS(NS, 'animateMotion');
         am.setAttribute('dur', dur + 's');
         am.setAttribute('repeatCount', 'indefinite');
         am.setAttribute('begin', begin + 's');
         const mpath = document.createElementNS(NS, 'mpath');
-        mpath.setAttributeNS('http://www.w3.org/1999/xlink', 'href', `#${id}`);
+        mpath.setAttributeNS('http://www.w3.org/1999/xlink', 'href', `#${pid}`);
         am.appendChild(mpath);
         c.appendChild(am);
 
         const ao = document.createElementNS(NS, 'animate');
         ao.setAttribute('attributeName', 'opacity');
-        ao.setAttribute('values', '0;0.7;0.7;0');
-        ao.setAttribute('keyTimes', '0;0.08;0.92;1');
+        ao.setAttribute('values', '0;0.8;0.6;0.8;0');
+        ao.setAttribute('keyTimes', '0;0.15;0.5;0.85;1');
         ao.setAttribute('dur', dur + 's');
         ao.setAttribute('repeatCount', 'indefinite');
         ao.setAttribute('begin', begin + 's');

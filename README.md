@@ -2,7 +2,7 @@
 
 A real-time Sankey-style dashboard for Microsoft Defender, visualizing security signals flowing from data sources into correlated incidents.
 
-![Dashboard Preview](Example.png)
+![Dashboard Preview](images/Example.png)
 
 ## Features
 

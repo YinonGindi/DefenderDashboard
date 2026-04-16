@@ -70,7 +70,27 @@ npm start
 
 Open `http://localhost:8080`
 
-### Deploy to Azure App Service
+### Deploy with ARM Template
+
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FYinonGindi%2FDefenderDashboard%2Fmain%2Fazuredeploy.json)
+
+Or via Azure CLI:
+
+```bash
+az deployment group create \
+  --resource-group YOUR_RESOURCE_GROUP \
+  --template-file azuredeploy.json \
+  --parameters appName=defender-dashboard-yourname
+```
+
+The template creates:
+- **App Service Plan** (Linux, B1 tier by default)
+- **App Service** with Node 20, System-Assigned Managed Identity, HTTPS-only
+- Outputs the **Managed Identity Object ID** and the **Cloud Shell command** to grant `ThreatHunting.Read.All`
+
+After deployment, ZIP deploy your code and run the permission grant command from the outputs.
+
+### Manual Deployment
 
 See [DEPLOY-GUIDE.md](DEPLOY-GUIDE.md) for a detailed step-by-step guide.
 

@@ -1,0 +1,102 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the App Service (must be globally unique)"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Azure region for all resources"
+      }
+    },
+    "skuName": {
+      "type": "string",
+      "defaultValue": "B1",
+      "allowedValues": ["F1", "B1", "B2", "B3", "S1", "S2", "S3", "P1v3", "P2v3", "P3v3"],
+      "metadata": {
+        "description": "App Service Plan pricing tier"
+      }
+    },
+    "nodeVersion": {
+      "type": "string",
+      "defaultValue": "20-lts",
+      "metadata": {
+        "description": "Node.js runtime version"
+      }
+    }
+  },
+  "variables": {
+    "appServicePlanName": "[concat(parameters('appName'), '-plan')]",
+    "graphAppId": "00000003-0000-0000-c000-000000000000"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2022-09-01",
+      "name": "[variables('appServicePlanName')]",
+      "location": "[parameters('location')]",
+      "kind": "linux",
+      "sku": {
+        "name": "[parameters('skuName')]"
+      },
+      "properties": {
+        "reserved": true
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2022-09-01",
+      "name": "[parameters('appName')]",
+      "location": "[parameters('location')]",
+      "kind": "app,linux",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]"
+      ],
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]",
+        "siteConfig": {
+          "linuxFxVersion": "[concat('NODE|', parameters('nodeVersion'))]",
+          "appCommandLine": "node server.js",
+          "appSettings": [
+            {
+              "name": "SCM_DO_BUILD_DURING_DEPLOYMENT",
+              "value": "true"
+            },
+            {
+              "name": "WEBSITE_NODE_DEFAULT_VERSION",
+              "value": "~20"
+            }
+          ],
+          "alwaysOn": "[if(equals(parameters('skuName'), 'F1'), false(), true())]",
+          "ftpsState": "Disabled",
+          "minTlsVersion": "1.2",
+          "http20Enabled": true
+        },
+        "httpsOnly": true
+      }
+    }
+  ],
+  "outputs": {
+    "appServiceUrl": {
+      "type": "string",
+      "value": "[concat('https://', parameters('appName'), '.azurewebsites.net')]"
+    },
+    "managedIdentityPrincipalId": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Web/sites', parameters('appName')), '2022-09-01', 'Full').identity.principalId]"
+    },
+    "grantPermissionCommand": {
+      "type": "string",
+      "value": "[concat('# Run in Azure Cloud Shell to grant ThreatHunting.Read.All:\\nGRAPH_SP_ID=$(az ad sp list --filter \"appId eq ''', variables('graphAppId'), '''\" --query \"[0].id\" -o tsv)\\nROLE_ID=$(az ad sp list --filter \"appId eq ''', variables('graphAppId'), '''\" --query \"[0].appRoles[?value==''ThreatHunting.Read.All''].id\" -o tsv)\\naz rest --method POST --uri \"https://graph.microsoft.com/v1.0/servicePrincipals/$GRAPH_SP_ID/appRoleAssignments\" --headers \"Content-Type=application/json\" --body \"{\\\"principalId\\\": \\\"', reference(resourceId('Microsoft.Web/sites', parameters('appName')), '2022-09-01', 'Full').identity.principalId, '\\\", \\\"resourceId\\\": \\\"$GRAPH_SP_ID\\\", \\\"appRoleId\\\": \\\"$ROLE_ID\\\"}\"')]"
+    }
+  }
+}

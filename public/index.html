@@ -232,6 +232,8 @@
         .left-label .ll-icon { font-size: 16px; }
         .left-label .ll-name { font-size: 15px; font-weight: 600; color: #c9d1d9; }
         .left-label .ll-val { font-size: 15px; font-weight: 400; color: #8b949e; }
+        .left-label[data-url] { cursor: pointer; }
+        .left-label[data-url]:hover .ll-name { color: #58a6ff; text-decoration: underline; }
 
         /* Left colored bars */
         .left-bar {
@@ -380,12 +382,12 @@
 <script>
 // ── Data (defaults — overwritten by API) ──
 let sources = [
-    { name: 'Identities',      value: 0,   icon: '🔑', color: '#3b5998' },
-    { name: 'Devices',          value: 0,   icon: '💻', color: '#1a6fb5' },
-    { name: 'Email',            value: 0,   icon: '📧', color: '#1a8a6a' },
-    { name: 'Cloud Apps',       value: 0,   icon: '☁',  color: '#6e4fa0' },
+    { name: 'Identities',      value: 0,   icon: '🔑', color: '#3b5998', url: 'https://security.microsoft.com/identity-inventory' },
+    { name: 'Devices',          value: 0,   icon: '💻', color: '#1a6fb5', url: 'https://security.microsoft.com/machines?category=all-devices' },
+    { name: 'Email',            value: 0,   icon: '📧', color: '#1a8a6a', url: 'https://security.microsoft.com/threatexplorerv3' },
+    { name: 'Cloud Apps',       value: 0,   icon: '☁',  color: '#6e4fa0', url: 'https://security.microsoft.com/cloudapps/settings?tabid=appConnectors' },
     { name: 'Sentinel',  value: 0,   icon: '<img src="https://ms-security.gallerycdn.vsassets.io/extensions/ms-security/ms-sentinel/2.0.2/1775192808731/Microsoft.VisualStudio.Services.Icons.Default" style="width:18px;height:18px;vertical-align:middle;border-radius:3px;">', color: '#2e9ced', unit: 'GB' },
-    { name: 'AI Agent',  value: 0,   icon: '🤖', color: '#9b59b6' },
+    { name: 'AI Agent',  value: 0,   icon: '🤖', color: '#9b59b6', url: 'https://security.microsoft.com/ai-agents-inventory' },
 ];
 let targets = [
     { name: 'High',          incidents: 0, alerts: 0, color: '#e74856' },
@@ -612,6 +614,10 @@ function layout() {
         lbl.className = 'left-label';
         lbl.style.cssText = `right:${W - LEFT_X + 12}px;top:${band.y + band.h / 2 - 18}px;`;
         lbl.innerHTML = `<span class="ll-icon">${band.icon}</span><span><span class="ll-name">${band.name}</span><br><span class="ll-val">${band.value}${band.unit ? ' ' + band.unit : ''}</span></span>`;
+        if (band.url) {
+            lbl.setAttribute('data-url', band.url);
+            lbl.addEventListener('click', () => window.open(band.url, '_blank'));
+        }
         canvas.appendChild(lbl);
     });
 

@@ -92,6 +92,8 @@
             border-right: 1px solid rgba(255,255,255,0.1);
         }
         .stat-item:last-child { border-right: none; }
+        a.stat-item { text-decoration: none; color: inherit; }
+        a.stat-item:hover { background: rgba(255,255,255,0.06); border-radius: 6px; }
         .stat-item .stat-val { font-size: 24px; font-weight: 700; }
         .stat-item .stat-val.blue { color: #58a6ff; }
         .stat-item .stat-val.green { color: #3fb950; }
@@ -318,11 +320,11 @@
         <h1>Microsoft Defender</h1>
     </div>
     <div class="header-stats">
-        <div class="stat-item"><div class="stat-val blue">0</div><div class="stat-label">Alerts</div></div>
+        <a class="stat-item" href="https://security.microsoft.com/alerts" target="_blank"><div class="stat-val blue">0</div><div class="stat-label">Alerts</div></a>
         <span class="stat-arrow">→</span>
-        <div class="stat-item"><div class="stat-val green">0</div><div class="stat-label">Incidents</div></div>
+        <a class="stat-item" href="https://security.microsoft.com/incidents" target="_blank"><div class="stat-val green">0</div><div class="stat-label">Incidents</div></a>
         <span class="stat-arrow" style="visibility:hidden">→</span>
-        <div class="stat-item"><div class="stat-val orange">0</div><div class="stat-label">Open Incidents</div></div>
+        <a class="stat-item" href="https://security.microsoft.com/incidents" target="_blank"><div class="stat-val orange">0</div><div class="stat-label">Open Incidents</div></a>
     </div>
     <div class="header-time">
         <select id="timeframe">
@@ -386,7 +388,7 @@ let sources = [
     { name: 'Devices',          value: 0,   icon: '💻', color: '#1a6fb5', url: 'https://security.microsoft.com/machines?category=all-devices' },
     { name: 'Email',            value: 0,   icon: '📧', color: '#1a8a6a', url: 'https://security.microsoft.com/threatexplorerv3' },
     { name: 'Cloud Apps',       value: 0,   icon: '☁',  color: '#6e4fa0', url: 'https://security.microsoft.com/cloudapps/settings?tabid=appConnectors' },
-    { name: 'Sentinel',  value: 0,   icon: '<img src="https://ms-security.gallerycdn.vsassets.io/extensions/ms-security/ms-sentinel/2.0.2/1775192808731/Microsoft.VisualStudio.Services.Icons.Default" style="width:18px;height:18px;vertical-align:middle;border-radius:3px;">', color: '#2e9ced', unit: 'GB' },
+    { name: 'Sentinel',  value: 0,   icon: '<img src="https://ms-security.gallerycdn.vsassets.io/extensions/ms-security/ms-sentinel/2.0.2/1775192808731/Microsoft.VisualStudio.Services.Icons.Default" style="width:18px;height:18px;vertical-align:middle;border-radius:3px;">', color: '#2e9ced', unit: 'GB', url: 'https://security.microsoft.com/v2/advanced-hunting?query=H4sIAIHX4GkAA02OQQ4BQRRE31riDr0cSwdgJbEWHKDFBItBultkxOE9PYhFpfpX_arfWzKRAy1jRjwJ3Dk6JRHZcKLztRTnqkaKvNebi3fyQsNUZfJryNxMdbrJ_KM2ras2-3gNKznaWdwo9KYDOzmwqDeit3uuf__KXko6372h8QULonSjwAAAAA&timeRangeId=SetInQuery' },
     { name: 'AI Agent',  value: 0,   icon: '🤖', color: '#9b59b6', url: 'https://security.microsoft.com/ai-agents-inventory' },
 ];
 let targets = [
@@ -525,28 +527,38 @@ function layout() {
     const PAD_TOP = 60;
     const PAD_BOT = 30;
     const usableH = H - PAD_TOP - PAD_BOT;
-    const totalSrcVal = sources.reduce((s, d) => s + d.value, 0) || 1;
     const GAP_SRC = 14;
-    const activeSrc = sources.filter(s => s.value > 0);
-    const srcScale = (usableH - GAP_SRC * Math.max(activeSrc.length - 1, 0)) / totalSrcVal;
+    const GAP_TGT = 14;
+    const MIN_BAND_H = 40;
 
-    const MIN_BAND_H = 32;
+    // ── Source bands (left) — reserve min height, distribute remainder proportionally ──
+    const activeSrc = sources.filter(s => s.value > 0);
+    const minReservedSrc = activeSrc.length * MIN_BAND_H;
+    const gapTotalSrc = GAP_SRC * Math.max(activeSrc.length - 1, 0);
+    const remainSrc = Math.max(usableH - gapTotalSrc - minReservedSrc, 0);
+    const totalSrcVal = activeSrc.reduce((s, d) => s + d.value, 0) || 1;
+    const srcExtraScale = remainSrc / totalSrcVal;
+
     let srcBands = [];
     let sy = PAD_TOP;
     for (const s of sources) {
-        const h = s.value > 0 ? Math.max(s.value * srcScale, MIN_BAND_H) : 0;
+        const h = s.value > 0 ? MIN_BAND_H + s.value * srcExtraScale : 0;
         srcBands.push({ ...s, y: sy, h });
         if (h > 0) sy += h + GAP_SRC;
     }
 
-    const totalTgtVal = targets.reduce((s, d) => s + d.alerts, 0) || 1;
-    const GAP_TGT = 14;
+    // ── Target bands (right) — same approach ──
     const activeTgt = targets.filter(t => t.alerts > 0);
-    const tgtScale = (usableH - GAP_TGT * Math.max(activeTgt.length - 1, 0)) / totalTgtVal;
+    const minReservedTgt = activeTgt.length * MIN_BAND_H;
+    const gapTotalTgt = GAP_TGT * Math.max(activeTgt.length - 1, 0);
+    const remainTgt = Math.max(usableH - gapTotalTgt - minReservedTgt, 0);
+    const totalTgtVal = activeTgt.reduce((s, d) => s + d.alerts, 0) || 1;
+    const tgtExtraScale = remainTgt / totalTgtVal;
+
     let tgtBands = [];
     let ty = PAD_TOP;
     for (const t of targets) {
-        const h = t.alerts > 0 ? Math.max(t.alerts * tgtScale, MIN_BAND_H) : 0;
+        const h = t.alerts > 0 ? MIN_BAND_H + t.alerts * tgtExtraScale : 0;
         tgtBands.push({ ...t, y: ty, h });
         if (h > 0) ty += h + GAP_TGT;
     }

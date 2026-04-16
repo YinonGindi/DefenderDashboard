@@ -29,6 +29,20 @@
       "metadata": {
         "description": "Node.js runtime version"
       }
+    },
+    "repoUrl": {
+      "type": "string",
+      "defaultValue": "https://github.com/YinonGindi/DefenderDashboard",
+      "metadata": {
+        "description": "GitHub repository URL for source deployment"
+      }
+    },
+    "branch": {
+      "type": "string",
+      "defaultValue": "main",
+      "metadata": {
+        "description": "Git branch to deploy from"
+      }
     }
   },
   "variables": {
@@ -82,6 +96,19 @@
           "http20Enabled": true
         },
         "httpsOnly": true
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites/sourcecontrols",
+      "apiVersion": "2022-09-01",
+      "name": "[concat(parameters('appName'), '/web')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('appName'))]"
+      ],
+      "properties": {
+        "repoUrl": "[parameters('repoUrl')]",
+        "branch": "[parameters('branch')]",
+        "isManualIntegration": true
       }
     }
   ],

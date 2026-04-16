@@ -530,10 +530,11 @@ function layout() {
     const activeSrc = sources.filter(s => s.value > 0);
     const srcScale = (usableH - GAP_SRC * Math.max(activeSrc.length - 1, 0)) / totalSrcVal;
 
+    const MIN_BAND_H = 32;
     let srcBands = [];
     let sy = PAD_TOP;
     for (const s of sources) {
-        const h = s.value > 0 ? s.value * srcScale : 0;
+        const h = s.value > 0 ? Math.max(s.value * srcScale, MIN_BAND_H) : 0;
         srcBands.push({ ...s, y: sy, h });
         if (h > 0) sy += h + GAP_SRC;
     }
@@ -545,7 +546,7 @@ function layout() {
     let tgtBands = [];
     let ty = PAD_TOP;
     for (const t of targets) {
-        const h = t.alerts > 0 ? t.alerts * tgtScale : 0;
+        const h = t.alerts > 0 ? Math.max(t.alerts * tgtScale, MIN_BAND_H) : 0;
         tgtBands.push({ ...t, y: ty, h });
         if (h > 0) ty += h + GAP_TGT;
     }

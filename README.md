@@ -113,6 +113,28 @@ Returns all dashboard data in a single JSON response.
 - **Frontend:** Vanilla HTML/CSS/JS with SVG Sankey visualization
 - **Hosting:** Azure App Service (Linux)
 
+## Metrics Calculation
+
+### Noise Reduction %
+
+```
+Noise Reduction = (1 - totalIncidents / totalAlerts) × 100
+```
+
+Represents the percentage of alerts that were **reduced** and not escalated into incidents.  
+Example: 342 alerts → 28 incidents = **92% noise reduction**
+
+### Correlation %
+
+```
+Correlation = (totalIncidents / totalAlerts) × 100
+```
+
+Represents the percentage of alerts that **correlated** into actual incidents.  
+Example: 28 incidents / 342 alerts = **8% correlation**
+
+> Noise Reduction + Correlation = 100%. If there are 0 alerts, both display 0%.
+
 ## License
 
 MIT

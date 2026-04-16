@@ -59,19 +59,44 @@ app.get('/api/dashboard', async (req, res) => {
         }
 
         const [
-            identityRows,
+            cloudIdentityRows,
+            hybridIdentityRows,
+            onpremIdentityRows,
             deviceRows,
             cloudAppRows,
+            oauthAppRows,
             emailRows,
             sentinelRows,
             aiAgentRows,
             alertRows,
             incidentRows,
             openIncidentRows,
+            workspaceRows,
         ] = await Promise.all([
-            // 1. Identities — distinct users
+            // 1a. Cloud Identities
             safeKQL(`
                 IdentityInfo
+                | summarize arg_max(Timestamp, *) by AccountObjectId, OnPremSid, CloudSid
+                | where Timestamp > ago(14d)
+                | where SourceProvider == 'AzureActiveDirectory'
+                | summarize Count = dcount(AccountUpn)
+            `),
+
+            // 1b. Hybrid Identities
+            safeKQL(`
+                IdentityInfo
+                | summarize arg_max(Timestamp, *) by AccountObjectId, OnPremSid, CloudSid
+                | where Timestamp > ago(14d)
+                | where SourceProvider == 'Hybrid'
+                | summarize Count = dcount(AccountUpn)
+            `),
+
+            // 1c. On-Prem Identities
+            safeKQL(`
+                IdentityInfo
+                | summarize arg_max(Timestamp, *) by AccountObjectId, OnPremSid, CloudSid
+                | where Timestamp > ago(14d)
+                | where SourceProvider == 'ActiveDirectory'
                 | summarize Count = dcount(AccountUpn)
             `),
 
@@ -87,6 +112,13 @@ app.get('/api/dashboard', async (req, res) => {
                 CloudAppEvents
                 | where Timestamp > ago(${ago})
                 | summarize Count = dcount(Application)
+            `),
+
+            // 3b. OAuth Apps
+            safeKQL(`
+                OAuthAppInfo
+                | where TimeGenerated > ago(14d)
+                | summarize Count = dcount(OAuthAppId)
             `),
 
             // 4. Email — distinct email events
@@ -139,11 +171,21 @@ app.get('/api/dashboard', async (req, res) => {
                 | where Status != "Closed"
                 | summarize OpenCount = dcount(IncidentNumber)
             `),
+
+            // 9. Workspace name
+            safeKQL(`
+                Usage
+                | limit 1
+                | project Workspace=split(ResourceUri,'/')[-1]
+            `),
         ]);
 
-        const identities = parseInt(identityRows[0]?.Count) || 0;
+        const cloudIdentities  = parseInt(cloudIdentityRows[0]?.Count) || 0;
+        const hybridIdentities = parseInt(hybridIdentityRows[0]?.Count) || 0;
+        const onpremIdentities = parseInt(onpremIdentityRows[0]?.Count) || 0;
         const devices    = parseInt(deviceRows[0]?.Count) || 0;
         const cloudApps  = parseInt(cloudAppRows[0]?.Count) || 0;
+        const oauthApps  = parseInt(oauthAppRows[0]?.Count) || 0;
         const email      = parseInt(emailRows[0]?.Count) || 0;
         const sentinelGB = parseFloat(sentinelRows[0]?.GB) || 0;
         const aiAgents   = parseInt(aiAgentRows[0]?.Count) || 0;
@@ -162,6 +204,7 @@ app.get('/api/dashboard', async (req, res) => {
         }
         const totalIncidents = Object.values(sevMap).reduce((s, v) => s + v, 0);
         const openIncidents  = parseInt(openIncidentRows[0]?.OpenCount) || 0;
+        const workspaceName  = workspaceRows[0]?.Workspace || '';
 
         // Noise reduction: % of alerts reduced to incidents
         const noiseReduction = totalAlerts > 0
@@ -173,8 +216,8 @@ app.get('/api/dashboard', async (req, res) => {
             : 0;
 
         res.json({
-            sources: { identities, devices, email, cloudApps, sentinelGB, aiAgents },
-            header:  { totalAlerts, totalIncidents, openIncidents },
+            sources: { cloudIdentities, hybridIdentities, onpremIdentities, devices, email, cloudApps, oauthApps, sentinelGB, aiAgents },
+            header:  { totalAlerts, totalIncidents, openIncidents, workspaceName },
             stats:   { noiseReduction, correlation },
             incidents: {
                 high:          { incidents: sevMap.high || 0,          alerts: highAlerts },
@@ -187,8 +230,8 @@ app.get('/api/dashboard', async (req, res) => {
         console.error('Dashboard API error:', err.message);
         // Return zeros so the frontend still renders
         res.json({
-            sources: { identities: 0, devices: 0, email: 0, cloudApps: 0, sentinelGB: 0, aiAgents: 0 },
-            header:  { totalAlerts: 0, totalIncidents: 0, openIncidents: 0 },
+            sources: { cloudIdentities: 0, hybridIdentities: 0, onpremIdentities: 0, devices: 0, email: 0, cloudApps: 0, oauthApps: 0, sentinelGB: 0, aiAgents: 0 },
+            header:  { totalAlerts: 0, totalIncidents: 0, openIncidents: 0, workspaceName: '' },
             stats:   { noiseReduction: 0, correlation: 0 },
             incidents: {
                 high:          { incidents: 0, alerts: 0 },

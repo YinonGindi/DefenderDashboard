@@ -18,11 +18,11 @@ A real-time Sankey-style dashboard for Microsoft Defender, visualizing security 
 
 | Source | KQL Table | Description |
 |--------|-----------|-------------|
-| Identities | `IdentityInfo` | Distinct user accounts |
+| Identities (Cloud/Hybrid/On-Prem) | `IdentityInfo` | Distinct user accounts split by SourceProvider |
 | Devices | `DeviceInfo` | Distinct devices seen |
 | Email | `EmailEvents` | Email event count |
-| Cloud Apps | `CloudAppEvents` | Distinct cloud applications |
-| Sentinel | `Usage` | Log ingestion volume (GB) |
+| Cloud Apps / OAuth Apps | `CloudAppEvents`, `OAuthAppInfo` | Distinct cloud & OAuth applications |
+| Sentinel | `Usage` | Log ingestion volume (GB/TB/PB) |
 | AI Agent | `AIAgentsInfo` | Distinct AI agents |
 
 ## Incident Severities (Right Side)
@@ -113,9 +113,12 @@ Returns all dashboard data in a single JSON response.
 **Response:**
 ```json
 {
-  "sources": { "identities": 150, "devices": 200, "email": 5000, "cloudApps": 45, "sentinelGB": 4.7, "aiAgents": 12 },
-  "header": { "totalAlerts": 342, "totalIncidents": 28, "openIncidents": 5 },
-  "stats": { "noiseReduction": 92, "correlation": 8 },
+  "sources": {
+    "cloudIdentities": 80, "hybridIdentities": 50, "onpremIdentities": 20,
+    "devices": 200, "email": 5000, "cloudApps": 45, "oauthApps": 120, "sentinelGB": 4.7, "aiAgents": 12
+  },
+  "header": { "totalAlerts": 342, "totalIncidents": 28, "openIncidents": 5, "workspaceName": "MyWorkspace" },
+  "stats": { "noiseReduction": 92, "mttaMinutes": 23.5, "mttrMinutes": 185.2 },
   "incidents": {
     "high": { "incidents": 3, "alerts": 45 },
     "medium": { "incidents": 10, "alerts": 120 },
@@ -138,22 +141,34 @@ Returns all dashboard data in a single JSON response.
 ### Noise Reduction %
 
 ```
-Noise Reduction = (1 - totalIncidents / totalAlerts) × 100
+Noise Reduction = (1 - incidentsWithAlerts / totalAlerts) × 100
 ```
 
 Represents the percentage of alerts that were **reduced** and not escalated into incidents.  
-Example: 342 alerts → 28 incidents = **92% noise reduction**
+Only counts incidents that have associated alerts (excludes alertless incidents).  
+Example: 342 alerts → 28 incidents with alerts = **92% noise reduction**
 
-### Correlation %
+### MTTA (Mean Time to Acknowledge)
 
 ```
-Correlation = (totalIncidents / totalAlerts) × 100
+MTTA = avg(FirstModifiedTime - CreatedTime) in minutes
 ```
 
-Represents the percentage of alerts that **correlated** into actual incidents.  
-Example: 28 incidents / 342 alerts = **8% correlation**
+Calculated from `SecurityIncident` where Status ≠ "New", with alerts, over the last 7 days.  
+Measures time from incident detection to first triage/assignment.  
+Displayed in minutes (<60) or hours (≥60). Example: **23 min**
 
-> Noise Reduction + Correlation = 100%. If there are 0 alerts, both display 0%.
+### MTTR (Mean Time to Resolve)
+
+```
+MTTR = avg(ClosedTime - CreatedTime) in minutes
+```
+
+Calculated from `SecurityIncident` where Status = "Closed", with alerts, over the last 7 days.  
+Measures time from incident creation to closure.  
+Displayed in minutes (<60) or hours (≥60). Example: **3.1h**
+
+> All metrics exclude incidents without alerts. If there are no matching incidents, metrics display 0.
 
 ## License
 

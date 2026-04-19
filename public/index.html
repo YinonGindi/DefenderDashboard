@@ -216,17 +216,43 @@
         }
 
         /* Annotation labels */
-        .anno {
+        .metrics-bar {
             position: absolute;
-            font-size: 13px;
-            font-weight: 600;
-            letter-spacing: 0.3px;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 28px;
             z-index: 10;
+            background: rgba(13,17,23,0.85);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 8px 24px;
         }
-        .anno-left { color: #3fb950; top: 24px; left: 25%; }
-        .anno-left::after { content: ' ▼'; font-size: 10px; }
-        .anno-right { color: #d29922; top: 24px; right: 25%; }
-        .anno-right::before { content: '▲ '; font-size: 10px; }
+        .metric-item {
+            text-align: center;
+            cursor: default;
+            position: relative;
+        }
+        .metric-val { font-size: 15px; font-weight: 700; color: #c9d1d9; }
+        .metric-label { font-size: 10px; color: #6b7b8d; text-transform: uppercase; letter-spacing: 0.5px; }
+        .metric-item .metric-tip {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1c2129;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 11px;
+            color: #8b949e;
+            white-space: nowrap;
+            z-index: 20;
+            margin-top: 6px;
+        }
+        .metric-item:hover .metric-tip { display: block; }
 
         /* Full-width SVG for sankey flows */
         #sankey {
@@ -382,8 +408,23 @@
 </header>
 
 <div class="canvas-wrap" id="canvas">
-    <div class="anno anno-left" id="anno-noise">0% noise reduction</div>
-    <div class="anno anno-right" id="anno-corr">0% correlation</div>
+    <div class="metrics-bar">
+        <div class="metric-item">
+            <div class="metric-tip">( 1 − Incidents / Alerts ) × 100</div>
+            <div class="metric-val" id="m-noise">0%</div>
+            <div class="metric-label">Noise Reduction</div>
+        </div>
+        <div class="metric-item">
+            <div class="metric-tip">Avg( Incident Assigned − Incident Created ) over 7d</div>
+            <div class="metric-val" id="m-mtta">0 min</div>
+            <div class="metric-label">MTTA</div>
+        </div>
+        <div class="metric-item">
+            <div class="metric-tip">Avg( Incident Closed − Incident Created ) over 7d</div>
+            <div class="metric-val" id="m-mttr">0 min</div>
+            <div class="metric-label">MTTR</div>
+        </div>
+    </div>
 
     <svg id="sankey"></svg>
 
@@ -458,7 +499,7 @@ async function fetchDashboard(timeframe, silent = false) {
         data = {
             sources: { cloudIdentities: 0, hybridIdentities: 0, onpremIdentities: 0, devices: 0, email: 0, cloudApps: 0, oauthApps: 0, sentinelGB: 0, aiAgents: 0 },
             header:  { totalAlerts: 0, totalIncidents: 0, openIncidents: 0, workspaceName: '' },
-            stats:   { noiseReduction: 0, correlation: 0 },
+            stats:   { noiseReduction: 0, mttaMinutes: 0, mttrMinutes: 0 },
             incidents: {
                 high: { incidents: 0, alerts: 0 }, medium: { incidents: 0, alerts: 0 },
                 low: { incidents: 0, alerts: 0 }, informational: { incidents: 0, alerts: 0 },
@@ -503,9 +544,12 @@ async function fetchDashboard(timeframe, silent = false) {
         wsEl.style.display = 'none';
     }
 
-    // Update annotations
-    document.getElementById('anno-noise').textContent = data.stats.noiseReduction + '% noise reduction';
-    document.getElementById('anno-corr').textContent  = data.stats.correlation + '% correlation';
+    // Update metrics bar
+    document.getElementById('m-noise').textContent = data.stats.noiseReduction + '%';
+    const mtta = data.stats.mttaMinutes;
+    const mttr = data.stats.mttrMinutes;
+    document.getElementById('m-mtta').textContent = mtta >= 60 ? (mtta / 60).toFixed(1).replace(/\.0$/, '') + 'h' : Math.round(mtta) + ' min';
+    document.getElementById('m-mttr').textContent = mttr >= 60 ? (mttr / 60).toFixed(1).replace(/\.0$/, '') + 'h' : Math.round(mttr) + ' min';
 
     // Hide loading overlay and reveal dashboard
     if (!silent) {
@@ -592,7 +636,7 @@ function layout() {
     const PAD_BOT = 30;
     const usableH = H - PAD_TOP - PAD_BOT;
     const GAP_SRC = 14;
-    const GAP_TGT = 14;
+    const GAP_TGT = 34;
     const MIN_BAND_H = 40;
 
     // ── Source bands (left) — reserve min height, distribute remainder proportionally ──
@@ -612,19 +656,18 @@ function layout() {
     }
 
     // ── Target bands (right) — same approach ──
-    const activeTgt = targets.filter(t => t.alerts > 0);
-    const minReservedTgt = activeTgt.length * MIN_BAND_H;
-    const gapTotalTgt = GAP_TGT * Math.max(activeTgt.length - 1, 0);
+    const minReservedTgt = targets.length * MIN_BAND_H;
+    const gapTotalTgt = GAP_TGT * Math.max(targets.length - 1, 0);
     const remainTgt = Math.max(usableH - gapTotalTgt - minReservedTgt, 0);
-    const totalTgtVal = activeTgt.reduce((s, d) => s + d.alerts, 0) || 1;
+    const totalTgtVal = targets.reduce((s, d) => s + d.alerts, 0) || 1;
     const tgtExtraScale = remainTgt / totalTgtVal;
 
     let tgtBands = [];
     let ty = PAD_TOP;
     for (const t of targets) {
-        const h = t.alerts > 0 ? MIN_BAND_H + t.alerts * tgtExtraScale : 0;
+        const h = MIN_BAND_H + (t.alerts > 0 ? t.alerts * tgtExtraScale : 0);
         tgtBands.push({ ...t, y: ty, h });
-        if (h > 0) ty += h + GAP_TGT;
+        ty += h + GAP_TGT;
     }
 
     const centerTop = H / 2 - 100;
@@ -646,8 +689,10 @@ function layout() {
     });
 
     let cRightY = centerTop;
+    const totalMinCRight = tgtBands.length * minCSlotH;
+    const remainCRight = Math.max(cTotalH - totalMinCRight, 0);
     const cRightSlots = tgtBands.map(b => {
-        const ch = (b.alerts / totalTgtVal) * cTotalH;
+        const ch = minCSlotH + (totalTgtVal > 0 ? (b.alerts / totalTgtVal) * remainCRight : 0);
         const slot = { y: cRightY, h: ch };
         cRightY += ch;
         return slot;
@@ -713,7 +758,6 @@ function layout() {
 
     // ── Draw right flows ──
     tgtBands.forEach((band, i) => {
-        if (band.h <= 0) return;
         const cSlot = cRightSlots[i];
 
         const grad = document.createElementNS(NS, 'linearGradient');
